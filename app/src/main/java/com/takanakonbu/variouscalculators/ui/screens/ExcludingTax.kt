@@ -12,13 +12,12 @@ import kotlin.math.roundToInt
 import java.text.NumberFormat
 import java.util.*
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExcludedTaxCalculator() {
     var amount by remember { mutableStateOf("") }
-    var taxRate by remember { mutableStateOf(0.10f) } // デフォルト税率10%
-    var taxExcludedAmount by remember { mutableStateOf(0L) }
-    var taxAmount by remember { mutableStateOf(0L) }
+    var taxRate by remember { mutableFloatStateOf(0.10f) } // デフォルト税率10%
+    var taxExcludedAmount by remember { mutableLongStateOf(0L) }
+    var taxAmount by remember { mutableLongStateOf(0L) }
     var showError by remember { mutableStateOf(false) }
 
     Column(

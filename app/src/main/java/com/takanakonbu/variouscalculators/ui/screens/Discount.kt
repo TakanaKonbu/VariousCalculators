@@ -12,13 +12,12 @@ import kotlin.math.roundToInt
 import java.text.NumberFormat
 import java.util.*
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DiscountCalculator() {
     var originalPrice by remember { mutableStateOf("") }
     var discountRate by remember { mutableStateOf("") }
-    var discountedPrice by remember { mutableStateOf(0L) }
-    var discountAmount by remember { mutableStateOf(0L) }
+    var discountedPrice by remember { mutableLongStateOf(0L) }
+    var discountAmount by remember { mutableLongStateOf(0L) }
     var showError by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
 
@@ -75,7 +74,7 @@ fun DiscountCalculator() {
                         showError = true
                         errorMessage = "割引率を入力してください"
                     }
-                    discountRate.toIntOrNull() ?: 0 > 100 -> {
+                    (discountRate.toIntOrNull() ?: 0) > 100 -> {
                         showError = true
                         errorMessage = "割引率は100%以下にしてください"
                     }
