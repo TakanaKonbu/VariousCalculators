@@ -16,12 +16,11 @@ import androidx.compose.ui.unit.sp
 fun Calculator() {
     var displayValue by remember { mutableStateOf("0") }
     var waitingForOperand by remember { mutableStateOf(true) }
-    var storedValue by remember { mutableDoubleStateOf(0.0) }
+    var storedValue by remember { mutableStateOf(0.0) }
     var pendingOperator by remember { mutableStateOf<String?>(null) }
     var lastOperation by remember { mutableStateOf("") }
 
     // 計算結果を整形する関数
-    @SuppressLint("DefaultLocale")
     fun formatResult(number: Double): String {
         return if (number % 1.0 == 0.0) {
             number.toLong().toString()
@@ -125,7 +124,7 @@ fun Calculator() {
                 listOf("7", "8", "9"),
                 listOf("4", "5", "6"),
                 listOf("1", "2", "3"),
-                listOf("0", "00", ".")
+                listOf("0", "⌫", ".")
             )
 
             numberRows.forEachIndexed { rowIndex, row ->
@@ -196,15 +195,18 @@ fun Calculator() {
                                     }
                                 }
                             }
-                            "00" -> {
+                            "⌫" -> {
                                 CalculatorButton(
                                     text = digit,
                                     modifier = Modifier.weight(1f),
-                                    backgroundColor = MaterialTheme.colorScheme.surfaceVariant,
-                                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                                    backgroundColor = MaterialTheme.colorScheme.errorContainer,
+                                    contentColor = MaterialTheme.colorScheme.onErrorContainer
                                 ) {
-                                    if (!waitingForOperand && displayValue != "0") {
-                                        displayValue += "00"
+                                    if (!waitingForOperand && displayValue.length > 1) {
+                                        displayValue = displayValue.dropLast(1)
+                                    } else {
+                                        displayValue = "0"
+                                        waitingForOperand = true
                                     }
                                 }
                             }
