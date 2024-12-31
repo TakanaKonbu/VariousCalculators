@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,20 +24,37 @@ import com.takanakonbu.variouscalculators.ui.theme.VariousCalculatorsTheme
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ShowChart
+import androidx.compose.material.icons.filled.Calculate
+import androidx.compose.material.icons.filled.Numbers
+import androidx.compose.material.icons.filled.Payments
+import androidx.compose.material.icons.filled.Percent
+import androidx.compose.material.icons.filled.PriceChange
+import androidx.compose.material.icons.filled.Science
+import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TopAppBar
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.takanakonbu.variouscalculators.ui.screens.ConcentrationCalculation
@@ -121,65 +139,109 @@ fun MainApp() {
 
 @Composable
 fun MainScreen(navController: NavController) {
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        MaterialTheme.colorScheme.surface,
+                        MaterialTheme.colorScheme.surface.copy(alpha = 0.95f)
+                    )
+                )
+            )
     ) {
-        Text(
-            text = "計算ツール",
-            style = MaterialTheme.typography.headlineLarge,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(bottom = 24.dp)
-        )
-
-        // メニューアイテムのリスト
-        val menuItems = listOf(
-            "税込み計算" to "taxIncluded",
-            "税抜き計算" to "excludedTax",
-            "割引計算" to "discount",
-            "元の値段計算" to "originalPrice",
-            "濃度計算" to "concentration",
-            "確率計算" to "probability",
-            "利益計算" to "profit",
-            "時間計算" to "time"
-        )
-
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            items(menuItems) { (title, route) ->
-                AnimatedMenuButton(title = title) {
-                    navController.navigate(route)
+            Text(
+                text = "計算ツール",
+                style = MaterialTheme.typography.displayMedium.copy(
+                    fontWeight = FontWeight.Bold
+                ),
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(bottom = 32.dp)
+            )
+
+            val menuItems = listOf(
+                MenuItem("税込み計算", "taxIncluded", Icons.Filled.Calculate),
+                MenuItem("税抜き計算", "excludedTax", Icons.Filled.Numbers),
+                MenuItem("割引計算", "discount", Icons.Filled.Percent),
+                MenuItem("元の値段計算", "originalPrice", Icons.Filled.PriceChange),
+                MenuItem("濃度計算", "concentration", Icons.Filled.Science),
+                MenuItem("確率計算", "probability", Icons.AutoMirrored.Filled.ShowChart),
+                MenuItem("利益計算", "profit", Icons.Filled.Payments),
+                MenuItem("時間計算", "time", Icons.Filled.Timer)
+            )
+
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                contentPadding = PaddingValues(horizontal = 8.dp),
+                modifier = Modifier.fillMaxSize()
+            ) {
+                items(menuItems) { item ->
+                    AnimatedMenuCard(item = item) {
+                        navController.navigate(item.route)
+                    }
                 }
             }
         }
     }
 }
 
+data class MenuItem(
+    val title: String,
+    val route: String,
+    val icon: ImageVector
+)
+
 @Composable
-fun AnimatedMenuButton(title: String, onClick: () -> Unit) {
+fun AnimatedMenuCard(
+    item: MenuItem,
+    onClick: () -> Unit
+) {
     Card(
+        onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
-            .height(64.dp)
-            .clickable(onClick = onClick)
-            .animateContentSize()
+            .aspectRatio(1f)
+            .shadow(
+                elevation = 4.dp,
+                spotColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                shape = RoundedCornerShape(16.dp)
+            )
+            .animateContentSize(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+        )
     ) {
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 16.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
+            Icon(
+                imageVector = item.icon,
+                contentDescription = null,
+                modifier = Modifier
+                    .size(40.dp)
+                    .padding(bottom = 8.dp),
+                tint = MaterialTheme.colorScheme.primary
+            )
+
             Text(
-                text = title,
+                text = item.title,
                 style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.weight(1f)
+                color = MaterialTheme.colorScheme.onSurface,
+                textAlign = TextAlign.Center
             )
         }
     }
