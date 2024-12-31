@@ -1,10 +1,9 @@
 package com.takanakonbu.variouscalculators.ui.screens
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,27 +16,46 @@ import androidx.compose.ui.unit.sp
 fun Calculator() {
     var displayValue by remember { mutableStateOf("0") }
     var waitingForOperand by remember { mutableStateOf(true) }
-    var storedValue by remember { mutableStateOf(0.0) }
+    var storedValue by remember { mutableDoubleStateOf(0.0) }
     var pendingOperator by remember { mutableStateOf<String?>(null) }
+    var lastOperation by remember { mutableStateOf("") }
+
+    // 計算結果を整形する関数
+    @SuppressLint("DefaultLocale")
+    fun formatResult(number: Double): String {
+        return if (number % 1.0 == 0.0) {
+            number.toLong().toString()
+        } else {
+            String.format("%.8f", number).trimEnd('0').trimEnd('.')
+        }
+    }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.surface)
     ) {
-        // Display
-        Box(
+        // Display Area
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(0.3f)
-                .background(MaterialTheme.colorScheme.surface),
-            contentAlignment = Alignment.BottomEnd
+                .background(MaterialTheme.colorScheme.surface)
+                .padding(horizontal = 24.dp, vertical = 16.dp),
+            horizontalAlignment = Alignment.End
         ) {
+            // Last Operation Display
+            Text(
+                text = lastOperation,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+            // Main Display
             Text(
                 text = displayValue,
-                style = MaterialTheme.typography.displayLarge,
+                style = MaterialTheme.typography.displayLarge.copy(fontSize = 48.sp),
                 color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp)
             )
         }
 
@@ -57,13 +75,14 @@ fun Calculator() {
                 CalculatorButton(
                     text = "C",
                     modifier = Modifier.weight(1f),
-                    backgroundColor = MaterialTheme.colorScheme.secondaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                    backgroundColor = MaterialTheme.colorScheme.errorContainer,
+                    contentColor = MaterialTheme.colorScheme.onErrorContainer
                 ) {
                     displayValue = "0"
                     waitingForOperand = true
                     storedValue = 0.0
                     pendingOperator = null
+                    lastOperation = ""
                 }
                 CalculatorButton(
                     text = "±",
@@ -71,10 +90,12 @@ fun Calculator() {
                     backgroundColor = MaterialTheme.colorScheme.secondaryContainer,
                     contentColor = MaterialTheme.colorScheme.onSecondaryContainer
                 ) {
-                    displayValue = if (displayValue.startsWith("-")) {
-                        displayValue.substring(1)
-                    } else {
-                        "-$displayValue"
+                    if (displayValue != "0") {
+                        displayValue = if (displayValue.startsWith("-")) {
+                            displayValue.substring(1)
+                        } else {
+                            "-$displayValue"
+                        }
                     }
                 }
                 CalculatorButton(
@@ -84,7 +105,7 @@ fun Calculator() {
                     contentColor = MaterialTheme.colorScheme.onSecondaryContainer
                 ) {
                     val currentValue = displayValue.toDoubleOrNull() ?: 0.0
-                    displayValue = (currentValue / 100).toString()
+                    displayValue = formatResult(currentValue / 100)
                 }
                 CalculatorButton(
                     text = "÷",
@@ -94,6 +115,7 @@ fun Calculator() {
                 ) {
                     pendingOperator = "÷"
                     storedValue = displayValue.toDoubleOrNull() ?: 0.0
+                    lastOperation = "$displayValue ÷"
                     waitingForOperand = true
                 }
             }
@@ -103,7 +125,7 @@ fun Calculator() {
                 listOf("7", "8", "9"),
                 listOf("4", "5", "6"),
                 listOf("1", "2", "3"),
-                listOf("0", ".", "=")
+                listOf("0", "00", ".")
             )
 
             numberRows.forEachIndexed { rowIndex, row ->
@@ -111,6 +133,31 @@ fun Calculator() {
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
+                    // Equal button in the last row
+                    if (rowIndex == 3) {
+                        CalculatorButton(
+                            text = "=",
+                            modifier = Modifier.weight(1f),
+                            backgroundColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary
+                        ) {
+                            if (pendingOperator != null && !waitingForOperand) {
+                                val currentValue = displayValue.toDoubleOrNull() ?: 0.0
+                                lastOperation += " $displayValue ="
+                                val result = when (pendingOperator) {
+                                    "+" -> storedValue + currentValue
+                                    "-" -> storedValue - currentValue
+                                    "×" -> storedValue * currentValue
+                                    "÷" -> if (currentValue != 0.0) storedValue / currentValue else Double.POSITIVE_INFINITY
+                                    else -> currentValue
+                                }
+                                displayValue = formatResult(result)
+                                pendingOperator = null
+                                waitingForOperand = true
+                            }
+                        }
+                    }
+
                     row.forEach { digit ->
                         when (digit) {
                             "=" -> {
@@ -122,14 +169,15 @@ fun Calculator() {
                                 ) {
                                     if (pendingOperator != null && !waitingForOperand) {
                                         val currentValue = displayValue.toDoubleOrNull() ?: 0.0
+                                        lastOperation += " $displayValue ="
                                         val result = when (pendingOperator) {
                                             "+" -> storedValue + currentValue
                                             "-" -> storedValue - currentValue
                                             "×" -> storedValue * currentValue
-                                            "÷" -> storedValue / currentValue
+                                            "÷" -> if (currentValue != 0.0) storedValue / currentValue else Double.POSITIVE_INFINITY
                                             else -> currentValue
                                         }
-                                        displayValue = result.toString()
+                                        displayValue = formatResult(result)
                                         pendingOperator = null
                                         waitingForOperand = true
                                     }
@@ -145,6 +193,18 @@ fun Calculator() {
                                     if (!displayValue.contains(".")) {
                                         displayValue = if (waitingForOperand) "0." else "$displayValue."
                                         waitingForOperand = false
+                                    }
+                                }
+                            }
+                            "00" -> {
+                                CalculatorButton(
+                                    text = digit,
+                                    modifier = Modifier.weight(1f),
+                                    backgroundColor = MaterialTheme.colorScheme.surfaceVariant,
+                                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                                ) {
+                                    if (!waitingForOperand && displayValue != "0") {
+                                        displayValue += "00"
                                     }
                                 }
                             }
@@ -181,6 +241,7 @@ fun Calculator() {
                         ) {
                             pendingOperator = operator
                             storedValue = displayValue.toDoubleOrNull() ?: 0.0
+                            lastOperation = "$displayValue $operator"
                             waitingForOperand = true
                         }
                     }
@@ -200,9 +261,7 @@ fun CalculatorButton(
 ) {
     Button(
         onClick = onClick,
-        modifier = modifier
-            .aspectRatio(1f)
-            .fillMaxWidth(),
+        modifier = modifier.aspectRatio(1f),
         colors = ButtonDefaults.buttonColors(
             containerColor = backgroundColor,
             contentColor = contentColor
@@ -211,8 +270,8 @@ fun CalculatorButton(
     ) {
         Text(
             text = text,
-            style = MaterialTheme.typography.headlineMedium
+            style = MaterialTheme.typography.headlineMedium,
+            fontSize = 24.sp
         )
     }
 }
-
