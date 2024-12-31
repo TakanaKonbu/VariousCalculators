@@ -57,6 +57,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.currentBackStackEntryAsState
+import com.takanakonbu.variouscalculators.ui.screens.Calculator
 import com.takanakonbu.variouscalculators.ui.screens.ConcentrationCalculation
 import com.takanakonbu.variouscalculators.ui.screens.ProbabilityCalculation
 import com.takanakonbu.variouscalculators.ui.screens.ProfitCalculation
@@ -133,6 +134,10 @@ fun MainApp() {
             composable("time") {
                 TimeCalculation()
             }
+            composable("calculation") {
+                Calculator()
+            }
+
         }
     }
 }
@@ -174,7 +179,8 @@ fun MainScreen(navController: NavController) {
                 MenuItem("濃度計算", "concentration", Icons.Filled.Science),
                 MenuItem("確率計算", "probability", Icons.AutoMirrored.Filled.ShowChart),
                 MenuItem("利益計算", "profit", Icons.Filled.Payments),
-                MenuItem("時間計算", "time", Icons.Filled.Timer)
+                MenuItem("時間計算", "time", Icons.Filled.Timer),
+                MenuItem("計算機", "calculation", Icons.Filled.Timer)
             )
 
             LazyVerticalGrid(
