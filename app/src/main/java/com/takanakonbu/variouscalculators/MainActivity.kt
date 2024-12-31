@@ -44,7 +44,7 @@ fun MainApp() {
 
     val menuItems = listOf(
         MenuItem("計算機", "calculation", Icons.Filled.Calculate),
-        MenuItem("税込み計算", "taxIncluded", Icons.Filled.Calculate),
+        MenuItem("税込み計算", "taxIncluded", Icons.Filled.Money),
         MenuItem("税抜き計算", "excludedTax", Icons.Filled.Numbers),
         MenuItem("割引計算", "discount", Icons.Filled.Percent),
         MenuItem("元の値段計算", "originalPrice", Icons.Filled.PriceChange),
