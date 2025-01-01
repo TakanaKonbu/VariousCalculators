@@ -17,7 +17,6 @@ import androidx.compose.material.icons.automirrored.filled.ShowChart
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.rememberDrawerState
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.takanakonbu.variouscalculators.ui.screens.*
 import com.takanakonbu.variouscalculators.ui.theme.VariousCalculatorsTheme

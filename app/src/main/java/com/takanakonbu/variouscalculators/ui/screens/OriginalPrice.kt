@@ -10,12 +10,11 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import kotlin.math.roundToInt
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OriginalPriceCalculator() {
     var originalPrice by remember { mutableStateOf("") }
     var discountedPrice by remember { mutableStateOf("") }
-    var discountRate by remember { mutableStateOf(0f) }
+    var discountRate by remember { mutableFloatStateOf(0f) }
     var showError by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
     var showResult by remember { mutableStateOf(false) }
@@ -77,12 +76,12 @@ fun OriginalPriceCalculator() {
                         errorMessage = "割引後価格を入力してください"
                         showResult = false
                     }
-                    originalPrice.toLongOrNull() ?: 0 <= 0 -> {
+                    (originalPrice.toLongOrNull() ?: 0) <= 0 -> {
                         showError = true
                         errorMessage = "元の価格は0より大きい値を入力してください"
                         showResult = false
                     }
-                    discountedPrice.toLongOrNull() ?: 0 <= 0 -> {
+                    (discountedPrice.toLongOrNull() ?: 0) <= 0 -> {
                         showError = true
                         errorMessage = "割引後価格は0より大きい値を入力してください"
                         showResult = false

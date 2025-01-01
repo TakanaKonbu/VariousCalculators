@@ -1,6 +1,5 @@
 package com.takanakonbu.variouscalculators.ui.screens
 
-import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -16,7 +15,7 @@ import androidx.compose.ui.unit.sp
 fun Calculator() {
     var displayValue by remember { mutableStateOf("0") }
     var waitingForOperand by remember { mutableStateOf(true) }
-    var storedValue by remember { mutableStateOf(0.0) }
+    var storedValue by remember { mutableDoubleStateOf(0.0) }
     var pendingOperator by remember { mutableStateOf<String?>(null) }
     var lastOperation by remember { mutableStateOf("") }
 

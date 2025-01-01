@@ -12,7 +12,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import kotlin.math.roundToInt
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ConcentrationCalculation() {
     var calculationMode by remember { mutableStateOf(CalculationMode.FIND_CONCENTRATION) }
