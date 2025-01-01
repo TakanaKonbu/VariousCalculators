@@ -19,10 +19,8 @@ fun ConcentrationCalculation() {
     var soluteAmount by remember { mutableStateOf("") }
     var solutionAmount by remember { mutableStateOf("") }
     var targetConcentration by remember { mutableStateOf("") }
-    var totalAmount by remember { mutableStateOf("") }
     var resultConcentration by remember { mutableStateOf(0f) }
     var resultSoluteAmount by remember { mutableStateOf(0f) }
-    var resultSolutionAmount by remember { mutableStateOf(0f) }
     var showError by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
     var showResult by remember { mutableStateOf(false) }
@@ -61,18 +59,6 @@ fun ConcentrationCalculation() {
             ) {
                 Text(
                     "溶質量",
-                    modifier = Modifier.padding(vertical = 16.dp)
-                )
-            }
-            Tab(
-                selected = calculationMode == CalculationMode.FIND_BOTH,
-                onClick = {
-                    calculationMode = CalculationMode.FIND_BOTH
-                    showResult = false
-                }
-            ) {
-                Text(
-                    "全量",
                     modifier = Modifier.padding(vertical = 16.dp)
                 )
             }
@@ -160,45 +146,6 @@ fun ConcentrationCalculation() {
                     } else { { Text("作りたい溶液の質量を入力してください") } }
                 )
             }
-            CalculationMode.FIND_BOTH -> {
-                // 合計量入力
-                OutlinedTextField(
-                    value = totalAmount,
-                    onValueChange = {
-                        if (it.isEmpty() || it.matches(Regex("^\\d*\\.?\\d*$"))) {
-                            totalAmount = it
-                            showError = false
-                            showResult = false
-                        }
-                    },
-                    label = { Text("作りたい合計量 (g)") },
-                    modifier = Modifier.fillMaxWidth(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                    isError = showError && errorMessage.contains("合計"),
-                    supportingText = if (showError && errorMessage.contains("合計")) {
-                        { Text(errorMessage) }
-                    } else { { Text("作りたい溶液の合計量を入力してください") } }
-                )
-
-                // 目標濃度入力
-                OutlinedTextField(
-                    value = targetConcentration,
-                    onValueChange = {
-                        if (it.isEmpty() || it.matches(Regex("^\\d*\\.?\\d*$"))) {
-                            targetConcentration = it
-                            showError = false
-                            showResult = false
-                        }
-                    },
-                    label = { Text("目標濃度 (%)") },
-                    modifier = Modifier.fillMaxWidth(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                    isError = showError && errorMessage.contains("濃度"),
-                    supportingText = if (showError && errorMessage.contains("濃度")) {
-                        { Text(errorMessage) }
-                    } else { { Text("作りたい濃度を入力してください") } }
-                )
-            }
         }
 
         // 計算ボタン
@@ -267,40 +214,6 @@ fun ConcentrationCalculation() {
                             }
                         }
                     }
-                    CalculationMode.FIND_BOTH -> {
-                        when {
-                            totalAmount.isEmpty() -> {
-                                showError = true
-                                errorMessage = "合計量を入力してください"
-                            }
-                            targetConcentration.isEmpty() -> {
-                                showError = true
-                                errorMessage = "目標濃度を入力してください"
-                            }
-                            totalAmount.toFloatOrNull() == null || totalAmount.toFloat() <= 0 -> {
-                                showError = true
-                                errorMessage = "合計量は0より大きい値を入力してください"
-                            }
-                            targetConcentration.toFloatOrNull() == null || targetConcentration.toFloat() <= 0 -> {
-                                showError = true
-                                errorMessage = "濃度は0より大きい値を入力してください"
-                            }
-                            targetConcentration.toFloat() >= 100 -> {
-                                showError = true
-                                errorMessage = "濃度は100%未満を入力してください"
-                            }
-                            else -> {
-                                val total = totalAmount.toFloat()
-                                val concentration = targetConcentration.toFloat()
-                                // 溶質量 = 合計量 × 濃度÷100
-                                resultSoluteAmount = ((total * concentration / 100) * 100).roundToInt() / 100f
-                                // 溶媒量 = 合計量 - 溶質量（溶液は溶媒の量）
-                                resultSolutionAmount = total - resultSoluteAmount
-                                showError = false
-                                showResult = true
-                            }
-                        }
-                    }
                 }
             },
             modifier = Modifier
@@ -356,28 +269,6 @@ fun ConcentrationCalculation() {
                                 color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
                             )
                         }
-                        CalculationMode.FIND_BOTH -> {
-                            Text(
-                                text = "溶質 ${resultSoluteAmount}g",
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
-                            Text(
-                                text = "溶液 ${resultSolutionAmount}g",
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
-                            Text(
-                                text = "合計: ${totalAmount.toFloat()}g",
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
-                            Text(
-                                text = "計算式:\n溶質量 = 合計量 × 濃度 ÷ 100\n溶媒量 = 合計量 - 溶質量",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
-                            )
-                        }
                     }
                 }
             }
@@ -408,8 +299,6 @@ fun ConcentrationCalculation() {
                             "溶質：溶かされる物質\n溶液：溶質が溶媒に溶けた混合物全体\n質量パーセント濃度：溶液全体に対する溶質の質量の割合"
                         CalculationMode.FIND_SOLUTE ->
                             "目標濃度：作りたい溶液の濃度（%）\n溶液の質量：作りたい溶液の全体量\n必要な溶質量：目標の濃度を達成するために必要な溶質の質量"
-                        CalculationMode.FIND_BOTH ->
-                            "合計量：作りたい溶液の全体量\n目標濃度：作りたい溶液の濃度（%）\n溶質量：溶かす物質の必要量\n溶媒量：加える溶媒の必要量"
                     },
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSecondaryContainer
@@ -421,6 +310,5 @@ fun ConcentrationCalculation() {
 
 enum class CalculationMode {
     FIND_CONCENTRATION,  // 濃度を求めるモード
-    FIND_SOLUTE,        // 溶質量を求めるモード
-    FIND_BOTH           // 溶質と溶媒の量を求めるモード
+    FIND_SOLUTE         // 溶質量を求めるモード
 }
